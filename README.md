@@ -82,7 +82,9 @@
   - _비밀번호, salt, 암호화반복횟수, 출력바이트, 해시알고리즘_
 
 ```javascript
-crypto.pbkdf2('비밀번호', salt, 100000, 64, 'sha512', (err, key) => {console.log('password : ', key.toString('base64'))});
+crypto.pbkdf2('비밀번호', salt, 100000, 64, 'sha512', (err, key) => {
+    console.log('password : ', key.toString('base64'))
+});
 ```
 
 - cipher.js
