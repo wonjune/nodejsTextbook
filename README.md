@@ -19,9 +19,9 @@
   - _mjs 확장자 사용_
   - _실행시 아래 명령어 사용_
 
-```bash
-    node --experimental-modules [파일명]
-```
+    ```bash
+      node --experimental-modules [파일명]
+    ```
 
 - globalA.js, globalB.js
   - _global 객체의 message 함수를 이용하여 다른 모듈간 메시지 공유_
@@ -81,11 +81,11 @@
   - _기존 문자열에 salt 라고 불리는 문자열을 붙이고 해시 알고리즘을 반복하여 사용_
   - _비밀번호, salt, 암호화반복횟수, 출력바이트, 해시알고리즘_
 
-```javascript
-crypto.pbkdf2('비밀번호', salt, 100000, 64, 'sha512', (err, key) => {
-    console.log('password : ', key.toString('base64'))
-});
-```
+    ```javascript
+      crypto.pbkdf2('비밀번호', salt, 100000, 64, 'sha512', (err, key) => {
+        console.log('password : ', key.toString('base64'))
+      });
+    ```
 
 - cipher.js
   - _crypto 모듈의 양방향 알고리즘을 이용하여 복호화 가능한 암호화 수행_
@@ -101,3 +101,25 @@ crypto.pbkdf2('비밀번호', salt, 100000, 64, 'sha512', (err, key) => {
   - _util 모듈 : 자주 사용되는 편의 기능을 모아둔 모듈. API 가 추가되고 삭제되는 경우가 많음_
   - _util.deprecate(함수, 메시지) : 함수가 deprecate 되었음을 알려줌. 인자의 함수가 수행되면 메시지를 출력_
   - _util.promisify(함수) : 콜백 패턴을 프로미스 패턴으로 전환. 인자의 함수를 프로미스로 변경해주고 async/await 패턴까지 사용 가능. 반대로 만들어주는 util.callbackify() 함수도 있으나 자주 사용되지 않음_
+
+- readFile.js
+  - _fs 모듈 : 파일시스템을 다루는 모듈_
+  - _텍스트 파일 읽어들이기_
+
+    ```javascript
+      fs.readFile(대상파일경로, (err, data) => {
+          // 콜백함수
+          // err : 에러발생시 로그
+          // data : 파일에서 읽어들인 데이터의 버퍼,
+          //        data.toString()로 텍스트 출력가능
+      })
+    ```
+
+- writeFile.js
+  - _텍스트파일 쓰기_
+    ```javascript
+      fs.writeFile(대상파일경로, 파일에입력할텍스트, (err) => {
+          // 콜백함수
+          // err : 에러발생시 로그
+      });
+    ```
