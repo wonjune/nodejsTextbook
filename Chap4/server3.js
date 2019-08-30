@@ -4,19 +4,19 @@ const parseCookies = (cookie = '') =>
     cookie
     .split(';')
     .map(v => v.split('='))
-    .map(([k, ... vs]) => [k, vs.join('=')])
+    .map(([k, ...vs]) => [k, vs.join('=')])
     .reduce((acc, [k, v]) => {
         acc[k.trim()] = decodeURIComponent(v);
         return acc;
     }, {});
 
 http.createServer((req, res) => {
-    console.log(req.headers.cookie);
-    console.log(req.headers.cookie.split(';'));
-    console.log(req.headers.cookie.split(';').map(v => v.split('=')));
-    console.log(req.headers.cookie.split(';').map(v => v.split('=')).map(([k, ... vs]) => [k, vs.join('=')]));
+    console.log('1: ', req.headers.cookie);
+    console.log('2: ',req.headers.cookie.split(';'));
+    console.log('3: ',req.headers.cookie.split(';').map(v => v.split('=')));
+    console.log('4: ',req.headers.cookie.split(';').map(v => v.split('=')).map(([k, ... vs]) => [k, vs.join('=')]));
     const cookies = parseCookies(req.headers.cookie);
-    console.log(req.url, cookies);
+    console.log('5: ', req.url, cookies);
     res.writeHead(200, { 'Set-Cookie': 'mycookie=test' });
     res.end('Hello Cookie');
 }).listen(8082, () => {
