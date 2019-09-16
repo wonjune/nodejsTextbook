@@ -496,16 +496,282 @@ case fruit
 
 #### 6.5.1.5 include
 
+다른 Pug 나 HTML 을 삽입
+
+- header.pug
+
+```pug
+header
+  a(href='/') Home
+  a(href='about') About
+```
+
+- footer.pug
+
+```pug
+footer
+  div 푸터입니다.
+```
+
+- main.pug
+
+```pug
+include header
+main
+  h1 메인 파일
+  p 다른 파일을 include 할 수 있습니다.
+include footer
+```
+
+변환하면...
+
+```HTML
+<header>
+  <a href="/">Home</a>
+  <a href="/about">About</a>
+</header>
+<main>
+  <h1>메인 파일</h1>
+  <p>다른 파일을 include 할 수 있습니다.</p>
+</main>
+<footer>
+  <div>푸터입니다.</div>>
+</footer>
+```
+
 #### 6.5.1.6 extends 와 block
+
+레이아웃을 미리 정의하여 사용할 수 있으며 보통 include 와 함께 사용
+
+- layout.pug
+
+```pug
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/style.css')
+      block style
+    body
+      header 헤더입니다.
+      block content
+      footer 푸터입니다.
+      block javascript
+```
+
+- body.pug
+
+```pug
+extends layout
+
+block content
+  main
+    p 내용입니다.
+
+block javascript
+  script(src="/javascript/main.js")
+```
+
+변환하면
+
+```html
+<html>
+  <head>
+    <title>Express</head>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+  </head>
+  <body>
+    <header>헤더입니다.</header>
+    <main>
+      <p>내용입니다.</p>
+    </main>
+    <footer>푸터입니다.</footer>
+    <script src="/javascript/main.js"></script>
+  </body>
+</html>
+```
 
 ### 6.5.2 EJS
 
+HTML 문법이 더 익숙할 경우 사용. HTML 문법을 그대로 사용하면서 자바스크립트 문법 추가 가능. JSP 와 상당히 유사함
+
+app.js 에 아래와 같이 설정
+
+```javascript
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+```
+
+콘솔에서 ejs 패키지 설치
+
+```bash
+npm i ejs
+```
+
 #### 6.5.2.1 변수
+
+변수는 `<%= %>` 로 감싸고, 자바스크립트 코드는 `<% %>`안에 작성. 이스케이프 하지 않을 경우 `<%- %>` 안에 작성
+
+```html
+<h1><%= title %></h1>
+<p>Welcome to <%= title %></p>
+<button class="<%= title %>" type="submit">전송</button>
+<input placeholder="<%= title + ' 연습 %>"/>
+<%
+  var node = 'Node.js'
+  var js = 'Javascript'
+%>
+<p><%= node %>와 <%= js %></p>
+<p><%= '<strong>이스케이프</strong>' %></p>
+<p><%- '<strong>이스케이프하지 않음</strong>' %></p>
+```
+
+변환하면
+
+```html
+<h1>Express</h1>
+<p>Welcome to Express</p>
+<button class="Express" type="submit">전송</button>
+<input placeholder="Express 연습"/>
+<p>Node.js와 Javascript</p>
+<p>&lt;strong&gt;이스케이프&lt;/strong&gt;</p>
+<p><strong>이스케이프하지 않음</strong></p>
+```
 
 #### 6.5.2.2 반복문
 
+반복문도 `<% %>` 내에 입력. 반복문에 대한 별도 문법은 없으며 `for`, `while`를 사용
+
+```html
+<ul>
+  <% var fruit = ['사과', '배', '오렌지', '바나나', '복숭아'] %>
+  <% for (var i = 0 ; i < fruits.length ; i++) { %>
+    <li><%= (i + 1) + '번째 ' + fruits[i] %></li>
+  <% } %>
+</ul>
+```
+
+변환하면...
+
+```html
+<ul>
+  <li>1번째 사과</li>
+  <li>2번째 바나나</li>
+  <li>3번째 오렌지</li>
+  <li>4번째 바나나</li>
+  <li>5번째 복숭아</li>
+</ul>
+```
+
 #### 6.5.2.3 조건문
+
+조건문도 `<% %>` 안에 작성
+
+```html
+<% if (isLoggedIn) { %>
+  <div>로그인 되었습니다.</div>
+<% } else { %>
+  <div>로그인이 필요합니다.</div>
+<% } %>
+<% switch(fruit) { %>
+<% case 'apple': %>
+  <p>사과입니다.</p>
+<% case 'banana': %>
+  <p>바나나입니다.</p>
+<% case 'orange': %>
+  <p>오렌지입니다.</p>
+<% default: %>
+  <p>사과도 바나나도 오렌지도 아닙니다.</p>
+<% } %>
+```
+
+변환하면
+
+```html
+<div>로그인 되었습니다.</div>
+<p>사과입니다.</p>
+```
 
 #### 6.5.2.4 include
 
+HTML 파일을 포함할 경우 `<%- include(파일 경로, 데이터) %>` 사용
+
+- body.ejs 파일
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <%- include('header') %>
+    <div>내용입니다.</div>
+    <%- include('footer',{ category: 'Node.js' }) %>
+  </body>
+</html>
+```
+
+- header.ejs 파일
+
+```html
+<header>헤더입니다.</header>
+```
+
+- footer.ejs 파일
+
+```html
+<footer> 푸터입니다. 변수: <%= category %></p>
+```
+
+변환하면...
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Express</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <header>헤더입니다.</header>
+    <div>내용입니다.</div>
+    <footer> 푸터입니다. 변수: Node.js</p>
+  </body>
+</html>
+```
+
+EJS 는 Pug의 `layout`, `block` 은 지원하지 않으나 express-ejs-layouts 패키지를 설치하면 사용 가능
+
 ### 6.5.3 에러 처리 미들웨어
+
+- app.js 파일
+
+```javascript
+// 에러 핸들러
+app.use(function(err, req, res, next) {
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  res.status(err.status || 500);
+  res.render('error');
+});
+```
+
+`res.locals` 변수에 값(에러메시지)을 대입하여 error라는 템플릿 파일을 렌더링하며, 이는 시스템환경이 'development'(개발)인 경우에만 수행된다.(에러메시지 노출은 보안상 취약하므로)
+
+코드 중 `req.app.get(키)` 라는 코드는 `req.app` 을 통해서 app 객체에 접근하는 것으로 이전에 `app.set(키)` 로 설정해 놓은 값을 `app.get(키)` 명령으로 다시 가져오는 것
+
+- views/error.pug 파일
+
+```pug
+extends layout
+
+block content
+  h1= message
+  h2= error.status
+  pre #{error.stack}
+```
+
+404 에러가 발생할 경우 message 는 'Not Found', error.status 는 404, error.stack은 에러에 대한 상세한 메시지가 표시되며 배포환경에서는 표시되지 않는다.
