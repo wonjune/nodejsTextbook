@@ -125,7 +125,7 @@ db.Sequelize = Sequelize;
 
 //추가부분 시작
 db.User = require('./user')(sequelize, Sequelize);
-db.Comment = require('./commet')(sequelize, Sequelize);
+db.Comment = require('./comment')(sequelize, Sequelize);
 //추가부분 끝
 
 module.exports = db;
