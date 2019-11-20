@@ -154,7 +154,7 @@ $ mongo
 `$or`을 사용하는 예제
 
 ```console
-> db.users.find({ $or: [{ age: { $gt: 30 }, married: true }] }, { _id: 0, name: 1, age: 1 });
+> db.users.find({ $or: [{ age: { $gt: 30 } }, { married: false }] }, { _id: 0, name: 1, age: 1 });
 { "name" : "zero", "age" : 24 }
 { "name" : "nero", "age" : 32 }
 ```
@@ -167,4 +167,118 @@ $ mongo
 { "name" : "zero", "age" : 24 }
 ```
 
+조회되는 다큐먼트 개수를 정하는 경우 `limit` 메서드 사용
+
+```console
+> db.users.find({}, { _id: 0, name: 1, age: 1 }).sort({ age: -1 }).limit(1);
+{ "name" : "nero", "age" : 32 }
+```
+
+개수를 설정하면서 몇 개를 건너뛸지 설정 가능. `skip` 메서드 사용
+
+```console
+> db.users.find({}, { _id: 0, name: 1, age: 1 }).sort({ age: -1 }).limit(1).skip(1);
+{ "name" : "zero", "age" : 24 }
+```
+
+### 8.5.3 Update(수정)
+
+```console
+$ mongo
+> db.users.update({ name: 'nero' }, { $set: { comment: '안녕하세요. 이 필드를 바꿔보겠습니다!' } });
+WriteResult({ "nMatched" : 1, "nInserted" : 0, "nModified" : 1 })
+```
+
+`$set` 연산자는 수정 대상 필드를 지정하는 역할을 하며, 만일 사용하지 않을 경우 다큐먼트가 통째로 두번째 인자로 주어진 객체로 수정됨
+
+### 8.5.4 Delete(삭제)
+
+```console
+$ mongo
+> db.users.remove({ name: 'nero' });
+WriteResult({ 'nRemoved': 1 })
+```
+
 ## 8.6 몽구스 사용하기
+
+MySQL의 시퀄라이즈에 대응되는 ODM(Object Document Mapping)이며, 몽고DB 자체가 자바스크립트를 사용하므로 굳이 사용하지 않아도 되지만 몽구스는 스키마를 정의해서 사용할 수 있고, `populate` 라는 메서드로 JOIN 기능을 보완하는 역할을 수행하므로 몽고DB를 편하게 사용할 수 있게 해줌. 몽고DB에 데이터를 입력/수정/삭제하기 전에 노드 서버단에서 데이터를 한 번 가공해주는 역할. 또한 ES2015 프로미스 문법과 가독성 높은 쿼리 빌더를 지원
+
+Express-generator로 learn-mongoose 프로젝트를 생성
+
+```console
+$ express learn-mongoose --view=pug
+```
+
+learn-mongoose 폴더에서 npm 패키지를 설지
+
+```console
+$ cd learn-mongoose && npm i
+```
+
+몽구스를 설치
+
+```console
+npm i mongoose
+```
+
+### 8.6.1 몽고디비 연결하기
+
+몽고디비는 주소를 사용해서 연결하며 주소의 형식은 `mongodb://[username:password@]host[:port][database][?options]`. 예를 들어 host는 로컬이고 port는 27017, 계정이 있는 database가 admin이면 `mongodb://이름:비밀번호@localhost:27017/admin`
+
+schemas 폴더를 루트 디렉토리에 생성하고 내부에 index.js 파일을 생성한 후 아래 내용을 입력
+
+```javascript
+const mongoose = require('mongoose');
+
+module.exports = () => {
+    //몽구스와 몽고디비를 연결, 실제 사용하는 데이터베이스는 nodejs 이므로 별도로 지정
+    const connect = () => {
+
+        //개발환경이 아닐때 쿼리내용을 콘솔에 표시
+        if (process.env.NODE_ENV !== 'production') {
+            mongoose.set('debug', true);
+        }
+
+        mongoose.connect('mongodb://username:password@localhost:27017/admin', {
+            dbName: 'nodejs',
+        }, (error) => {
+            if (error) {
+                console.log('몽고디비 연결 에러', error);
+            } else {
+                console.log('몽고디비 연결 성공');
+            }
+        });
+    };
+
+    connect();
+
+    //에러등을 처리하기 위한 이벤트리스너 등록
+    mongoose.connection.on('error', (error) => {
+        console.error('몽고디비 연결 에러', error);
+    });
+    mongoose.connection.on('disconnected', () => {
+        console.error('몽고디비 연결이 끊겼습니다. 재연결을 시도합니다.');
+        connect();
+    });
+
+    //이후 추가될 User 스키마와 Comment 스키마를 연결
+    require('./user');
+    require('./comment');
+};
+```
+
+schemas/index.js 를 app.js 와 연결하여 노드 실행 시 `mongoose.connect` 부분이 실행되도록 app.js에 아래 코드를 추가
+
+```javascript
+...
+var indexRouter = require('./routes/index');
+var usersRouter = require('./routes/users');
+var connect = require('./schemas'); //추가
+
+var app = express();
+connect();  //추가
+...
+```
+
+### 8.6.2 스키마 정의하기
+
