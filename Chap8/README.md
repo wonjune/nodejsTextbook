@@ -206,13 +206,13 @@ MySQL의 시퀄라이즈에 대응되는 ODM(Object Document Mapping)이며, 몽
 Express-generator로 learn-mongoose 프로젝트를 생성
 
 ```console
-$ express learn-mongoose --view=pug
+express learn-mongoose --view=pug
 ```
 
 learn-mongoose 폴더에서 npm 패키지를 설지
 
 ```console
-$ cd learn-mongoose && npm i
+cd learn-mongoose && npm i
 ```
 
 몽구스를 설치
@@ -282,3 +282,105 @@ connect();  //추가
 
 ### 8.6.2 스키마 정의하기
 
+schemas 폴더에 user.js 파일 생성
+
+```javascript
+const mongoose = require('mongoose');
+
+const { Schema } = mongoose;
+const userSchema = new Schema({
+    name: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+    age: {
+        type: Number,
+        required: true,
+    },
+    married: {
+        type: Boolean,
+        required: true,
+    },
+    comment: String,
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+});
+
+//몽구스의 model 메서드로 스키마와 몽고디비 컬렉션을 연결
+//첫번째 인자의 앞글자를 소문자로 바꾸고 뒤에 s 를 붙여 복수형으로 컬렉션을 생성함. 직접 만들길 원하는 경우 세번째 인자로 컬렉션명을 지정
+module.exports = mongoose.model('User', userSchema);
+```
+
+스키마의 자료형과 몽고DB의 자료형이 살짝 다름(스키마는 String, Number, Date, Buffer, Mixed, ObjectId, Array)
+
+Schemas 폴더에 comment.js 파일 생성
+
+```javascript
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
+const { Types: { ObjectId } } = Schema;
+const commentSchema = new Schema({
+    commenter: {
+        type: ObjectId,
+        required: true,
+        ref: 'User',    //User 스키마의 사용자 ObjectId가 입력된다는 뜻. JOIN 시 필요
+    },
+    comment: {
+        type: String,
+        required: true,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+});
+
+module.exports = mongoose.model('Comment', commentSchema);
+```
+
+### 8.6.3 쿼리 수행하기
+
+views 폴더 안에 mongoose.pug 파일을 생성. 파일 내용이 기므로 코드 참조.
+
+publics 폴더 안에 mongoose.js 파일을 생성. 파일 내용이 기므로 코드 참조.
+
+routes 폴더 안에 index.js 파일에 아래 내용 추가. GET 으로 /로 접속 했을 때, User.find({}) 메서드(몽고디비의 `db.users.find({})` 와 동일)로 모든 사용자를 조회한 후, mongoose.pug 를 렌더링할 때 users 변수로 넘기는 로직이 추가됨
+
+```javascript
+var express = require('express');
+var User = require('../schemas/user');  // 추가
+
+var router = express.Router();
+
+router.get('/', function (req, res, next) {
+    //추가 시작
+    User.find({})
+    .then((users) => {
+        res.render('mongoose', { users });
+    })
+    .catch((err) => {
+        console.error(err);
+        next(err);
+    });
+    // 추가 끝
+});
+
+module.exports = router;
+```
+
+추가된 문법을 async/await 문법으로 변경하면 아래와 같이 표현할 수 있다
+
+```javascript
+router.get('/', async (req, res, next) => {
+    try{
+        const users = await User.find({});
+        res.render('mongoose', { users });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+});
+```
