@@ -365,7 +365,7 @@ router.get('/', function (req, res, next) {
         console.error(err);
         next(err);
     });
-    // 추가 끝
+    //추가 끝
 });
 
 module.exports = router;
@@ -383,4 +383,123 @@ router.get('/', async (req, res, next) => {
         next(error);
     }
 });
+```
+
+routes 폴더에 user.js 파일에 아래 내용을 추가. GET 으로 /users 로 요청했을 때는 사용자 리스트를 조회하여 JSON 형식으로 반환, POST 로 /users 요청했을 때는 입력할 데이터를 user 객체로 생성한 후 `save`메서드로 저장.(user 객체와 스키마가 부합하지 않는 경우 몽구스에서 에러 처리)
+
+```javascript
+var express = require('express');
+var User = require('../schemas/user'); //추가
+
+var router = express.Router();
+
+//추가 시작
+//user 조회
+router.get('/', function (req, res, next) {
+    User.find({})
+    .then((users) => {
+        res.json(users);
+    })
+    .catch({err} => {
+        console.error(err);
+        next(err);
+    });
+});
+
+//user 등록
+router.post('/', function (req, res, next) {
+    const user = new User({
+        name: req.body.name,
+        age: req.body.age,
+        married: req. body.married,
+    });
+
+    user.save()
+    .then((result) => {
+        console.log(result);
+        res.status(201).json(result);
+    })
+    .catch((err) => {
+        console.error(err);
+        next(err);
+    });
+});;
+//추가 끝
+
+module.exports = router;
+```
+
+routes/comments.js 파일을 추가(내용은 코드파일 참조). 댓글에 대한 CRUD를 처리 
+
+- GET /comments/:id 호출 : `find` 메서드에 `populate` 메서드를 붙여 관련있는 컬렉현의 다큐먼트를 불러온다. Comment 스키마의 commenter 필드의 ref 가 User로 되어 있으므로 알아서 users 컬렉션에서 사용자 다큐먼트를 찾아와 합치고 commenter 필드가 사용자 다큐먼트로 치환.
+  
+  ```javascript
+  ...
+  router.get('/:id', function (req, res, next) {
+      Comment.find({ commenter: req.params.id }).populate('commenter')
+      .then((comments) => {
+          console.log(comments);
+          res.json(comments);
+      })
+      ...
+  });
+  ...
+  ```
+
+- POST /comments 호출 : 댓글 다큐먼트를 등록한다. `save`한 뒤에 `populate` 메서드를 수행해서 User 스키마와 합체. path 옵션은 어떤 필드를 합칠지 설정하는 값
+
+  ```javascript
+  ...
+  comment.save()
+  .then((result) => {
+      return Comment.populate(result, { path: 'commenter' });
+  })
+  ...
+  ```
+
+- PATCH /comments/:id 호출 : 댓글 다큐먼트를 수정한다. `update`메서드를 사용하며 첫번째 인자에 조건, 두번째 인자에 수정할 내용을 넣는데 몽고디비와는 다르게 $set 연산자를 사용하지 않아도 기입한 필드만 수정하므로 안전함
+
+  ```javascript
+  router.patch('/:id', function (req, res, next) {
+      Comment.update({ _id: req.params.id }, { comment: req.body.comment })
+      .then((result) => {
+          res.json(result);
+      })
+      ...
+  });
+  ...
+  ```
+
+- DELETE /comments/:id 호출 : 댓글 다큐먼트를 삭제한다. `remove`메서드를 사용하며 첫번째 인자로 조건이 들어감
+  
+  ```javascript
+  router.delete('/:id', function (req, res, next) {
+      Comment.remove({ _id: req.params.id })
+      .then((result) => {
+          res.json(result);
+      })
+      ...
+  });
+  ...
+  ```
+
+마지막으로 app.js 파일을 수정하여 라우터를 서버에 연결하고 express.static의 순서도 조정
+
+```javascript
+...
+var indexRouter = require('./routes/index');
+var usersRouter = require('./routes/users');
+var commentsRouter = require('./routes/comments'); // 추가
+...
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+app.use('/comments', commentsRouter); // 추가
+...
+```
+
+몽고디비를 실행한 후 서버를 구동
+
+```console
+mongod --auth
+npm start
 ```
