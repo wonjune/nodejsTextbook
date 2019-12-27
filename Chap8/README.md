@@ -429,7 +429,7 @@ router.post('/', function (req, res, next) {
 module.exports = router;
 ```
 
-routes/comments.js 파일을 추가(내용은 코드파일 참조). 댓글에 대한 CRUD를 처리 
+routes/comments.js 파일을 추가(내용은 코드파일 참조). 댓글에 대한 CRUD를 처리
 
 - GET /comments/:id 호출 : `find` 메서드에 `populate` 메서드를 붙여 관련있는 컬렉현의 다큐먼트를 불러온다. Comment 스키마의 commenter 필드의 ref 가 User로 되어 있으므로 알아서 users 컬렉션에서 사용자 다큐먼트를 찾아와 합치고 commenter 필드가 사용자 다큐먼트로 치환.
   
