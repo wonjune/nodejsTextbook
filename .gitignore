@@ -5,3 +5,4 @@
 /Chap8/learn-mongoose/node_modules/*
 /Chap9/nodebird/node_modules/*
 /Chap9/nodebird/.env
+.vscode/*

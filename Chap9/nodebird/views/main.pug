@@ -7,8 +7,8 @@ block content
         form#twit-form(action='/post' method='post' enctype='multipart/form-data')
           .input-group
             textarea#twit(name='content' maxlength=140)
-          .img-proview
-            img#img-proview(src='' style='display: none;' width='250' alt='미리보기')
+          .img-preview
+            img#img-preview(src='' style='display: none;' width='250' alt='미리보기')
             input#img-url(type='hidden' name='url')
           div
             label#img-label(for='img') 사진 업로드
@@ -16,7 +16,7 @@ block content
             button#twit-btn.btn(type='submit') 짹짹
     .twits
       form#hashtag-form(action='/post/hashtag')
-        input(type='text' name='hashtag' placeholde='태그 검색')
+        input(type='text' name='hashtag' placeholder='태그 검색')
         button.btn 검색
       for twit in twits
         .twit

@@ -3,7 +3,10 @@ const express = require('express');
 const router = express.Router();
 
 router.get('/profile', (req, res) => {
-    res.render('profile', { title: '내 정보 - NodeBird', user: null });
+    res.render('profile', {
+        title: '내 정보 - NodeBird',
+        user: null
+    });
 });
 
 router.get('/join', (req, res) => {
@@ -14,7 +17,7 @@ router.get('/join', (req, res) => {
     });
 });
 
-router.get('/', (req, res) => {
+router.get('/', (req, res, next) => {
     res.render('main', {
         title: 'NodeBird',
         twits: [],
